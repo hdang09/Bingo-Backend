@@ -1,0 +1,20 @@
+# Exclude build-related files and directories
+target/
+build/
+
+# Exclude temporary and generated files
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+
+# Exclude IDE-specific files and directories
+.idea/
+*.ipr
+*.iws
+*.iml
+
+# Exclude system-specific files and directories
+.DS_Store
+Thumbs.db
