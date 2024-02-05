@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -30,22 +31,17 @@ public class BoardService {
     private final PlayerRepository playerRepository;
     private final BoardRepository boardRepository;
     private final AuthorizationUtil authorizationUtil;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public BoardService(
-            DrawnRepository drawnRepository,
-            DrawnByPlayerRepository drawnByPlayerRepository,
-            RoomRepository roomRepository,
-            PlayerRepository playerRepository,
-            BoardRepository boardRepository,
-            AuthorizationUtil authorizationUtil
-    ) {
+    public BoardService(DrawnRepository drawnRepository, DrawnByPlayerRepository drawnByPlayerRepository, RoomRepository roomRepository, PlayerRepository playerRepository, BoardRepository boardRepository, AuthorizationUtil authorizationUtil, SimpMessagingTemplate messagingTemplate) {
         this.drawnRepository = drawnRepository;
         this.drawnByPlayerRepository = drawnByPlayerRepository;
         this.roomRepository = roomRepository;
         this.playerRepository = playerRepository;
         this.boardRepository = boardRepository;
         this.authorizationUtil = authorizationUtil;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public ResponseEntity<Response<int[][]>> getBoard(HttpServletRequest request) {
@@ -279,6 +275,9 @@ public class BoardService {
         // Add drawn number to database
         Drawn drawn = new Drawn(room, randomNumber);
         drawnRepository.save(drawn);
+
+        // Realtime with recent drawn number with WebSocket
+        messagingTemplate.convertAndSend("/topic/call/" + room.getRoomId(), randomNumber);
 
         // Return response
         Response<Integer> response = new Response<>(ResponseStatus.SUCCESS, "Call successfully", randomNumber);

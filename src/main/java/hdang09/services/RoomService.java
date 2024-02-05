@@ -137,8 +137,8 @@ public class RoomService {
         playerRepository.save(player);
 
         // Get all players in room with WebSocket
-        List<Player> playersInRoom = roomRepository.findById(roomId).orElse(null).getPlayers();
-        messagingTemplate.convertAndSend("/topic/players/" + roomId, playersInRoom);
+        players.add(player);
+        messagingTemplate.convertAndSend("/topic/players/" + roomId, players);
 
         // Add player to room
         room.getPlayers().add(player);
@@ -188,6 +188,17 @@ public class RoomService {
             Response<Void> response = new Response<>(ResponseStatus.ERROR, "The room is started. You can't leave because you are host");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+
+        // Get all players in room with WebSocket
+        UUID roomId = player.getCurrentRoom().getRoomId();
+        List<Player> players = roomRepository.getByRoomId(roomId).getPlayers();
+        players.remove(player);
+        messagingTemplate.convertAndSend("/topic/players/" + roomId, players);
+
+        // Get all room with WebSocket
+        List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
+        List<AllRoomResponseDTO> allRoomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
+        messagingTemplate.convertAndSend("/topic/rooms", allRoomResponseDTOs);
 
         // Remove player from room
         player.setCurrentRoom(null);
@@ -260,6 +271,9 @@ public class RoomService {
         // Set room to started
         room.setStatus(RoomStatus.PLAYING);
         roomRepository.save(room);
+
+        // Notify the room is started with WebSocket
+        messagingTemplate.convertAndSend("/topic/room-started/" + room.getRoomId(), true);
 
         // Return response
         Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Start room successfully");
