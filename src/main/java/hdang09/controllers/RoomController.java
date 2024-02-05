@@ -55,10 +55,10 @@ public class RoomController {
         return roomService.leaveRoom(request);
     }
 
-    @Operation(summary = "Get room info and all players in room")
-    @GetMapping("/{roomId}")
-    public ResponseEntity<Response<RoomResponseDTO>> getRoomById(@PathVariable UUID roomId) {
-        return roomService.getRoomById(roomId);
+    @Operation(summary = "Get all players in the current room")
+    @GetMapping("/players")
+    public ResponseEntity<Response<RoomResponseDTO>> getPlayers(HttpServletRequest request) {
+        return roomService.getPlayers(request);
     }
 
     @Operation(summary = "Start game")

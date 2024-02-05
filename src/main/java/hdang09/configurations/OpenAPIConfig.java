@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "Bingo Game API",
                 version = "1.0.0",
-                description = "An API for Bingo Game"
+                description = "An API for Bingo Game."
         )
 )
 @SecurityScheme(

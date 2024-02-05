@@ -54,10 +54,10 @@ public class BoardController {
     }
 
     @Operation(summary = "Call a number")
-    @PostMapping("/drawn/call")
+    @PostMapping("/call")
     public ResponseEntity<Response<Integer>> callANumber(
             HttpServletRequest request
     ) {
-        return boardService.call(request);
+        return boardService.callANumber(request);
     }
 }

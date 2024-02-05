@@ -238,7 +238,7 @@ public class BoardService {
     }
 
 
-    public ResponseEntity<Response<Integer>> call(HttpServletRequest request) {
+    public ResponseEntity<Response<Integer>> callANumber(HttpServletRequest request) {
         // Get player
         UUID playerId = authorizationUtil.getPlayerIdFromHeader(request);
         Player player = playerRepository.findById(playerId).orElse(null);

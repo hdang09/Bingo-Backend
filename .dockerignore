@@ -1,5 +1,4 @@
 # Exclude build-related files and directories
-target/
 build/
 
 # Exclude temporary and generated files

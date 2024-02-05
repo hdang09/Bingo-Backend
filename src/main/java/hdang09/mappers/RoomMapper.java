@@ -12,6 +12,7 @@ import java.util.List;
 
 @Mapper
 public interface RoomMapper {
+
     RoomMapper INSTANCE = Mappers.getMapper(RoomMapper.class);
 
     Room toEntity(CreateRoomDTO createRoomDTO);

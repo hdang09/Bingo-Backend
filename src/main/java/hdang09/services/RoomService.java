@@ -2,13 +2,11 @@ package hdang09.services;
 
 import hdang09.dtos.requests.CreateRoomDTO;
 import hdang09.dtos.responses.AllRoomResponseDTO;
-import hdang09.dtos.responses.PlayerResponseDTO;
 import hdang09.dtos.responses.RoomResponseDTO;
 import hdang09.entities.Player;
 import hdang09.entities.Room;
 import hdang09.enums.ResponseStatus;
 import hdang09.enums.RoomStatus;
-import hdang09.mappers.PlayerMapper;
 import hdang09.mappers.RoomMapper;
 import hdang09.models.Response;
 import hdang09.repositories.PlayerRepository;
@@ -201,34 +199,26 @@ public class RoomService {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<Response<RoomResponseDTO>> getRoomById(UUID roomId) {
-        System.out.println(roomId);
-        // Get room by ID
-        Room room = roomRepository.getByRoomId(roomId);
-        System.out.println(room);
-        if (room == null) {
-            Response<RoomResponseDTO> response = new Response<>(ResponseStatus.ERROR, "Room not found");
+    public ResponseEntity<Response<RoomResponseDTO>> getPlayers(HttpServletRequest request) {
+        // Get player ID from token
+        UUID playerId = authorizationUtil.getPlayerIdFromHeader(request);
+        Player player = playerRepository.findById(playerId).orElse(null);
+        if (player == null) {
+            Response<RoomResponseDTO> response = new Response<>(ResponseStatus.ERROR, "Player not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        System.out.println(room.getPlayers());
+        // Check if player is in room or not
+        if (player.getCurrentRoom() == null) {
+            Response<RoomResponseDTO> response = new Response<>(ResponseStatus.ERROR, "Player is not in room");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
 
         // Map to response DTO
-        RoomResponseDTO roomResponseDTO = RoomMapper.INSTANCE.toDTO(room);
-
-        System.out.println(roomResponseDTO.getPlayers());
-
-        // Get all player in room
-        List<Player> players = room.getPlayers();
-
-        // Map to response DTO
-        List<PlayerResponseDTO> playerResponseDTOs = PlayerMapper.INSTANCE.toDTOs(players);
-
-        // Set players to response DTO
-        roomResponseDTO.setPlayers(playerResponseDTOs);
+        RoomResponseDTO dto = RoomMapper.INSTANCE.toDTO(player.getCurrentRoom());
 
         // Return response
-        Response<RoomResponseDTO> response = new Response<>(ResponseStatus.SUCCESS, "Get room by ID successfully", roomResponseDTO);
+        Response<RoomResponseDTO> response = new Response<>(ResponseStatus.SUCCESS, "Get players in room successfully", dto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

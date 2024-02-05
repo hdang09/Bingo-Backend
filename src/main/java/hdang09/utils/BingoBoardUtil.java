@@ -30,11 +30,19 @@ public class BingoBoardUtil {
 
         // Loop through each row of the board
         for (int row = 0; row < height; row++) {
+            // Set to keep track of free column indices
+            Set<Integer> freeNumberSet = new HashSet<>();
+
+            // Loop to mark a certain number of columns as free (0)
             for (int numberEachRow = 0; numberEachRow < width - maxNumberEachRow; numberEachRow++) {
                 // Generate a random column index
-                int index = random.nextInt(width);
+                int index;
+                do {
+                    index = random.nextInt(width);
+                } while (freeNumberSet.contains(index));
 
-                // Free number
+                // Mark the column as free (0)
+                freeNumberSet.add(index);
                 board[row][index] = 0;
             }
         }

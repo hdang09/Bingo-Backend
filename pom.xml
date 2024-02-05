@@ -5,8 +5,8 @@
 
 	<artifactId>hdang09</artifactId>
 
-	<name>Student Management</name>
-	<description>Student Management</description>
+	<name>Bingo Game</name>
+	<description>Bingo Game</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -108,6 +108,4 @@
 		</plugins>
 		<finalName>bingo</finalName>
 	</build>
-
-
 </project>

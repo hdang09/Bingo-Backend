@@ -24,4 +24,7 @@
 /nbdist/
 /.nb-gradle/
 
+### Docker
+docker-compose.yml
+
 src/main/resources/*.yml
