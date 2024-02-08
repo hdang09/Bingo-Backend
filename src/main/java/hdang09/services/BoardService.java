@@ -223,6 +223,9 @@ public class BoardService {
             room.setStatus(RoomStatus.FINISHED);
             roomRepository.save(room);
 
+            // Notify that we have a person win with WebSocket
+            messagingTemplate.convertAndSend("/topic/win/" + room.getRoomId(), player.getFullName() + " has won");
+
             // Return response
             Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "BINGO! You are the winner");
             return ResponseEntity.status(HttpStatus.OK).body(response);

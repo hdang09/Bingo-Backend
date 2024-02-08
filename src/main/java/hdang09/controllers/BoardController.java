@@ -14,7 +14,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/board")
-@CrossOrigin
 @Tag(name = "Board")
 @SecurityRequirement(name = "bearerAuth")
 public class BoardController {

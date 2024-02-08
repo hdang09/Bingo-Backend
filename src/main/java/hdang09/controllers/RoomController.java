@@ -19,7 +19,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/room")
-@CrossOrigin
 @Tag(name = "Room")
 @SecurityRequirement(name = "bearerAuth")
 public class RoomController {
