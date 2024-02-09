@@ -62,7 +62,7 @@ public class RoomController {
 
     @Operation(summary = "Start game")
     @GetMapping("/start")
-    public ResponseEntity<Response<Void>> startGame(HttpServletRequest request) {
-        return roomService.startGame(request);
+    public ResponseEntity<Response<Void>> startRoom(HttpServletRequest request) {
+        return roomService.startRoom(request);
     }
 }

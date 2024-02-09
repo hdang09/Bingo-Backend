@@ -141,7 +141,7 @@ public class RoomService {
         messagingTemplate.convertAndSend("/topic/players/" + roomId, players);
 
         // Add player to room
-        room.getPlayers().add(player);
+//        room.getPlayers().add(player);
 
         // Get all room with WebSocket
         List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
@@ -233,7 +233,7 @@ public class RoomService {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    public ResponseEntity<Response<Void>> startGame(HttpServletRequest request) {
+    public ResponseEntity<Response<Void>> startRoom(HttpServletRequest request) {
         // Get player ID from token
         UUID playerId = authorizationUtil.getPlayerIdFromHeader(request);
         Player player = playerRepository.findById(playerId).orElse(null);
@@ -274,6 +274,11 @@ public class RoomService {
 
         // Notify the room is started with WebSocket
         messagingTemplate.convertAndSend("/topic/room-started/" + room.getRoomId(), true);
+
+        // Get all room with WebSocket
+        List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
+        List<AllRoomResponseDTO> allRoomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
+        messagingTemplate.convertAndSend("/topic/rooms", allRoomResponseDTOs);
 
         // Return response
         Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Start room successfully");
