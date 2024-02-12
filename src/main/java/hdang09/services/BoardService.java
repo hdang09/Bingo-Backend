@@ -114,7 +114,7 @@ public class BoardService {
 
         // Get all drawn number
         List<Drawn> drawnList = drawnRepository.findAllByRoom(room);
-        Set<Integer> drawnNumber = drawnList.stream().map(Drawn::getDrawnNumber).collect(Collectors.toSet());
+        Set<Integer> drawnNumber = drawnList.stream().map(Drawn::getDrawnNumber).sorted().collect(Collectors.toSet());
 
         // Return response
         Response<Set<Integer>> response = new Response<>(ResponseStatus.SUCCESS, "Get all drawn number", drawnNumber);

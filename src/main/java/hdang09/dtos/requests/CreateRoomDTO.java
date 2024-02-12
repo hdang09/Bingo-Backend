@@ -17,14 +17,14 @@ public class CreateRoomDTO {
     private int betMoney;
 
     @Min(value = 2, message = "Number of players must be greater than 2")
-    @Max(value = 10, message = "Number of players must be less than 10")
-    private int numberOfPlayers = 10;
+    @Max(value = 15, message = "Number of players must be less than 15")
+    private int numberOfPlayers = 15;
 
-    @Min(value = 1, message = "Width must be greater than 1")
-    @Max(value = 10, message = "Width must be less than 10")
-    private int width = 6;
+    @Min(value = 2, message = "Width must be greater than 2")
+    @Max(value = 7, message = "Width must be less than 7")
+    private int width = 7;
 
-    @Min(value = 1, message = "Height must be greater than 1")
+    @Min(value = 2, message = "Height must be greater than 2")
     @Max(value = 9, message = "Height must be less than 9")
     private int height = 9;
 

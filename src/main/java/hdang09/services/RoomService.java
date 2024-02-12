@@ -127,7 +127,7 @@ public class RoomService {
 
         // Check if room is full
         List<Player> players = room.getPlayers();
-        if (players.size() > room.getNumberOfPlayers()) {
+        if (players.size() >= room.getNumberOfPlayers()) {
             Response<Void> response = new Response<>(ResponseStatus.ERROR, "Room is full");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
@@ -257,7 +257,7 @@ public class RoomService {
 
         // Check if room is full
         List<Player> players = room.getPlayers();
-        if (players.size() >= room.getNumberOfPlayers()) {
+        if (players.size() > room.getNumberOfPlayers()) {
             Response<Void> response = new Response<>(ResponseStatus.ERROR, "Room is full");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
