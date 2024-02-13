@@ -1,7 +1,6 @@
 package hdang09.services;
 
 import hdang09.dtos.requests.CreateRoomDTO;
-import hdang09.dtos.responses.AllRoomResponseDTO;
 import hdang09.dtos.responses.RoomResponseDTO;
 import hdang09.entities.Player;
 import hdang09.entities.Room;
@@ -43,15 +42,15 @@ public class RoomService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public ResponseEntity<Response<List<AllRoomResponseDTO>>> getAllRoom() {
+    public ResponseEntity<Response<List<RoomResponseDTO>>> getAllRoom() {
         // Get all room
         List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
 
         // Map to response DTO
-        List<AllRoomResponseDTO> roomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
+        List<RoomResponseDTO> roomResponseDTOs = RoomMapper.INSTANCE.toRoomResponseDTOs(rooms);
 
         // Return response
-        Response<List<AllRoomResponseDTO>> response = new Response<>(ResponseStatus.SUCCESS, "Get all room successfully", roomResponseDTOs);
+        Response<List<RoomResponseDTO>> response = new Response<>(ResponseStatus.SUCCESS, "Get all room successfully", roomResponseDTOs);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -87,10 +86,8 @@ public class RoomService {
         // Map to response DTO
         RoomResponseDTO roomResponseDTO = RoomMapper.INSTANCE.toDTO(room);
 
-        // Get all room with WebSocket
-        List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
-        List<AllRoomResponseDTO> allRoomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
-        messagingTemplate.convertAndSend("/topic/rooms", allRoomResponseDTOs);
+        // WebSocket
+        messagingTemplate.convertAndSend("/topic/rooms", roomResponseDTO);
 
         // Return response
         Response<RoomResponseDTO> response = new Response<>(ResponseStatus.SUCCESS, "Create room successfully", roomResponseDTO);
@@ -137,16 +134,11 @@ public class RoomService {
         playerRepository.save(player);
 
         // Get all players in room with WebSocket
-        players.add(player);
-        messagingTemplate.convertAndSend("/topic/players/" + roomId, players);
+        messagingTemplate.convertAndSend("/topic/players/" + roomId, player);
 
-        // Add player to room
-//        room.getPlayers().add(player);
-
-        // Get all room with WebSocket
-        List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
-        List<AllRoomResponseDTO> allRoomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
-        messagingTemplate.convertAndSend("/topic/rooms", allRoomResponseDTOs);
+        // WebSocket
+        room.getPlayers().add(player);
+        messagingTemplate.convertAndSend("/topic/rooms", room);
 
         // Return response
         Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Join room successfully");
@@ -170,35 +162,32 @@ public class RoomService {
 
         // Check if room is already started
         if (player.getCurrentRoom().getStatus().equals(RoomStatus.PLAYING) && player.isHost()) {
-            if (player.getCurrentRoom().getPlayers().size() == 1) {
-                // Remove player from room
-                player.setCurrentRoom(null);
-                player.setHost(false);
-                playerRepository.save(player);
+//            if (player.getCurrentRoom().getPlayers().size() != 1) {
+//                Response<Void> response = new Response<>(ResponseStatus.ERROR, "You can't leave because there are still players in the room");
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//            }
 
-                // Set room to finished
-                player.getCurrentRoom().setStatus(RoomStatus.FINISHED);
-                roomRepository.save(player.getCurrentRoom());
+            // Set room to finished
+            player.getCurrentRoom().setStatus(RoomStatus.FINISHED);
+            roomRepository.save(player.getCurrentRoom());
 
-                // Return response
-                Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Leave room successfully. The room is finished");
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
+            // Remove player from room
+            player.setCurrentRoom(null);
+            player.setHost(false);
+            playerRepository.save(player);
 
-            Response<Void> response = new Response<>(ResponseStatus.ERROR, "The room is started. You can't leave because you are host");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            // Return response
+            Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Leave room successfully. The room is finished");
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }
 
         // Get all players in room with WebSocket
         UUID roomId = player.getCurrentRoom().getRoomId();
-        List<Player> players = roomRepository.getByRoomId(roomId).getPlayers();
-        players.remove(player);
-        messagingTemplate.convertAndSend("/topic/players/" + roomId, players);
+        messagingTemplate.convertAndSend("/topic/players/" + roomId, player);
 
         // Get all room with WebSocket
-        List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
-        List<AllRoomResponseDTO> allRoomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
-        messagingTemplate.convertAndSend("/topic/rooms", allRoomResponseDTOs);
+        player.getCurrentRoom().getPlayers().remove(player);
+        messagingTemplate.convertAndSend("/topic/rooms", player.getCurrentRoom());
 
         // Remove player from room
         player.setCurrentRoom(null);
@@ -276,9 +265,7 @@ public class RoomService {
         messagingTemplate.convertAndSend("/topic/room-started/" + room.getRoomId(), true);
 
         // Get all room with WebSocket
-        List<Room> rooms = roomRepository.getAllWaitingAndPlayingRoom();
-        List<AllRoomResponseDTO> allRoomResponseDTOs = RoomMapper.INSTANCE.roomsToAllRoomResponseDTOs(rooms);
-        messagingTemplate.convertAndSend("/topic/rooms", allRoomResponseDTOs);
+        messagingTemplate.convertAndSend("/topic/rooms", room);
 
         // Return response
         Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Start room successfully");

@@ -1,7 +1,6 @@
 package hdang09.controllers;
 
 import hdang09.dtos.requests.CreateRoomDTO;
-import hdang09.dtos.responses.AllRoomResponseDTO;
 import hdang09.dtos.responses.RoomResponseDTO;
 import hdang09.models.Response;
 import hdang09.services.RoomService;
@@ -32,7 +31,7 @@ public class RoomController {
 
     @Operation(summary = "Get all room")
     @GetMapping("/all")
-    public ResponseEntity<Response<List<AllRoomResponseDTO>>> getAllRoom() {
+    public ResponseEntity<Response<List<RoomResponseDTO>>> getAllRoom() {
         return roomService.getAllRoom();
     }
 
