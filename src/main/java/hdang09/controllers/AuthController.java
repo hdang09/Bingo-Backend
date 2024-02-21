@@ -5,7 +5,9 @@ import hdang09.dtos.responses.LoginResponseDTO;
 import hdang09.models.Response;
 import hdang09.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +36,19 @@ public class AuthController {
     @GetMapping("/login/google")
     public ResponseEntity<String> loginWithGoogle(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
         return authService.loginWithGoogle(oAuth2AuthenticationToken);
+    }
+
+    @Operation(summary = "Logout")
+    @PostMapping("/logout")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Response<Void>> logout(HttpServletRequest request) {
+        return authService.logout(request);
+    }
+
+    @Operation(summary = "Get new access token")
+    @PostMapping("/refresh-token")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Response<Void>> refreshToken(HttpServletRequest request) {
+        return authService.refreshToken(request);
     }
 }

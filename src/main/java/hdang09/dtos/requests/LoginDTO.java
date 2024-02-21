@@ -9,8 +9,8 @@ import lombok.Data;
 @Data
 public class LoginDTO {
 
-    @NotBlank(message = "Username is required")
-    @Size(min = 2, max = 20, message = "Username must be between 2 and 20 characters")
+    @NotBlank(message = "Fullname is required")
+    @Size(min = 2, max = 20, message = "Fullname must be between 2 and 20 characters")
     @Schema(example = "hdang09")
     private String fullName;
 

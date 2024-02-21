@@ -10,9 +10,8 @@ import java.util.UUID;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, UUID> {
-    @Query("SELECT r FROM Room r WHERE r.roomId = ?1")
-    Room getByRoomId(UUID roomId);
 
     @Query("SELECT r FROM Room r WHERE r.status = 'WAITING' OR r.status = 'PLAYING'")
     List<Room> getAllWaitingAndPlayingRoom();
+
 }

@@ -7,8 +7,10 @@ import hdang09.dtos.responses.LoginResponseDTO;
 import hdang09.mappers.PlayerMapper;
 import hdang09.models.Response;
 import hdang09.repositories.PlayerRepository;
+import hdang09.utils.AuthorizationUtil;
 import hdang09.utils.JwtUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -29,13 +32,16 @@ public class AuthService {
 
     private final PlayerRepository playerRepository;
 
+    private final AuthorizationUtil authorizationUtil;
+
     @Value("${url.client}")
     private String URL_CLIENT;
 
     @Autowired
-    public AuthService(JwtUtil jwtUtil, PlayerRepository playerRepository) {
+    public AuthService(JwtUtil jwtUtil, PlayerRepository playerRepository, AuthorizationUtil authorizationUtil) {
         this.jwtUtil = jwtUtil;
         this.playerRepository = playerRepository;
+        this.authorizationUtil = authorizationUtil;
     }
 
     public ResponseEntity<Response<LoginResponseDTO>> login(LoginDTO account) {
@@ -85,5 +91,26 @@ public class AuthService {
         response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.FOUND).location(uri).build();
+    }
+
+    public ResponseEntity<Response<Void>> logout(HttpServletRequest request) {
+        // Get player
+        UUID playerId = authorizationUtil.getPlayerIdFromHeader(request);
+        Player player = playerRepository.findById(playerId).orElse(null);
+        if (player == null) {
+            Response<Void> response = new Response<>(ResponseStatus.ERROR, "Player not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Leave room
+        player.setCurrentRoom(null);
+        playerRepository.save(player);
+
+        Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "Logout successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    public ResponseEntity<Response<Void>> refreshToken(HttpServletRequest request) {
+        return null;
     }
 }

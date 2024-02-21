@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface PlayerRepository extends JpaRepository<Player, UUID> {
     @Transactional
     @Modifying
-    @Query("UPDATE Player p SET p.currentRoom = null, p.host = false WHERE p.currentRoom = ?1")
+    @Query("UPDATE Player p SET p.currentRoom = null WHERE p.currentRoom = ?1")
     void removeAllPlayerInRoom(Room room);
 
     Player findByEmail(String email);

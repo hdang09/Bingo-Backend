@@ -32,8 +32,10 @@ public class Player {
     @JsonBackReference
     private Room currentRoom;
 
-    @Column(name = "is_host")
-    private boolean host = false;
+    @ManyToOne
+    @JoinColumn(name = "host_room_id", referencedColumnName = "room_id")
+    @JsonBackReference
+    private Room hostRoom;
 
     @Column(name = "email")
     private String email;

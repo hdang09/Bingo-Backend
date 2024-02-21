@@ -77,7 +77,7 @@ public class RoomService {
 
         // Make player host
         player.setCurrentRoom(room);
-        player.setHost(true);
+        player.setHostRoom(room);
         playerRepository.save(player);
 
         // Add player to room
@@ -161,7 +161,8 @@ public class RoomService {
         }
 
         // Check if room is already started
-        if (player.getCurrentRoom().getStatus().equals(RoomStatus.PLAYING) && player.isHost()) {
+        boolean isHost = player.getHostRoom() != null && player.getHostRoom().equals(player.getCurrentRoom());
+        if (player.getCurrentRoom().getStatus().equals(RoomStatus.PLAYING) && isHost) {
 //            if (player.getCurrentRoom().getPlayers().size() != 1) {
 //                Response<Void> response = new Response<>(ResponseStatus.ERROR, "You can't leave because there are still players in the room");
 //                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -173,7 +174,6 @@ public class RoomService {
 
             // Remove player from room
             player.setCurrentRoom(null);
-            player.setHost(false);
             playerRepository.save(player);
 
             // Return response
@@ -191,7 +191,6 @@ public class RoomService {
 
         // Remove player from room
         player.setCurrentRoom(null);
-        player.setHost(false);
         playerRepository.save(player);
 
         // Return response
@@ -232,7 +231,8 @@ public class RoomService {
         }
 
         // Check if player is host
-        if (!player.isHost()) {
+        boolean isHost = player.getHostRoom() != null && player.getHostRoom().equals(player.getCurrentRoom());
+        if (!isHost) {
             Response<Void> response = new Response<>(ResponseStatus.ERROR, "Player is not host");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }

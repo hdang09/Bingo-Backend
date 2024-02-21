@@ -62,5 +62,13 @@ public class Room {
                 ", numberOfPlayers=" + numberOfPlayers +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Room)) return false;
+        Room room = (Room) o;
+        return getRoomId().equals(room.getRoomId());
+    }
 }
 

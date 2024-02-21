@@ -15,11 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 @Service
@@ -199,6 +197,9 @@ public class BoardService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
+        // Notify that we have a person win with WebSocket
+        messagingTemplate.convertAndSend("/topic/drawn/" + player.getPlayerId(), drawnNumber);
+
         // Drawn a number
         DrawnByPlayer drawn = new DrawnByPlayer(room, drawnNumber, player);
         drawnByPlayerRepository.save(drawn);
@@ -217,14 +218,14 @@ public class BoardService {
         // Check if player is winner
         boolean isBingo = BingoBoardUtil.isBingo(playerBoard, drawnByPlayerNumberSet, drawnNumber);
         if (isBingo) {
+            // Notify that we have a person win with WebSocket
+            messagingTemplate.convertAndSend("/topic/win/" + room.getRoomId(), player.getFullName() + " has won");
+
             // Remove all player in the room
             playerRepository.removeAllPlayerInRoom(room);
 
             room.setStatus(RoomStatus.FINISHED);
             roomRepository.save(room);
-
-            // Notify that we have a person win with WebSocket
-            messagingTemplate.convertAndSend("/topic/win/" + room.getRoomId(), player.getFullName() + " has won");
 
             // Return response
             Response<Void> response = new Response<>(ResponseStatus.SUCCESS, "BINGO! You are the winner");
@@ -260,7 +261,8 @@ public class BoardService {
         }
 
         // Check if player is a host
-        if (!player.isHost()) {
+        boolean isHost = player.getHostRoom() != null && player.getHostRoom().equals(player.getCurrentRoom());
+        if (!isHost) {
             Response<Integer> response = new Response<>(ResponseStatus.ERROR, "You cannot call a number because you are not a host");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
@@ -268,19 +270,19 @@ public class BoardService {
         // Get all drawn number
         List<Drawn> drawnList = drawnRepository.findAllByRoom(room);
         Set<Integer> drawnNumber = drawnList.stream().map(Drawn::getDrawnNumber).collect(Collectors.toSet());
+        List<Integer> undrawnNumber = IntStream.rangeClosed(1, room.getWidth() * 10 - 1).boxed().collect(Collectors.toList());
+        undrawnNumber.removeAll(drawnNumber);
 
         // Generate a random number
-        int randomNumber = 0;
-        do {
-            randomNumber = BingoBoardUtil.generateRandomNumber(1, room.getWidth() * 10);
-        } while (drawnNumber.contains(randomNumber));
+        int randomIndex = BingoBoardUtil.generateRandomNumber(1, undrawnNumber.size());
+        int randomNumber = undrawnNumber.get(randomIndex);
+
+        // Realtime with recent drawn number with WebSocket
+        messagingTemplate.convertAndSend("/topic/call/" + room.getRoomId(), randomNumber);
 
         // Add drawn number to database
         Drawn drawn = new Drawn(room, randomNumber);
         drawnRepository.save(drawn);
-
-        // Realtime with recent drawn number with WebSocket
-        messagingTemplate.convertAndSend("/topic/call/" + room.getRoomId(), randomNumber);
 
         // Return response
         Response<Integer> response = new Response<>(ResponseStatus.SUCCESS, "Call successfully", randomNumber);
